@@ -10,21 +10,20 @@ Usage typique
 ```php
 <?php
 
+/* On inclut la classe */
 require_once '../Auth42.php';
 
+/* On spécifie le login et le password de connexion */
 $login = "monlogin";
 $password = "monpassword";
 
+/* On essaye de s'authentifier */
 $result = Auth42::authenticate ($login, $password);
 
 if ($result === true)
-{
     echo "Les identifiants sont valides !";
-}
 else
-{
     echo "Les identifiants sont invalides...";
-}
 ?>
 ```
 
@@ -50,13 +49,9 @@ try
 {
     $result = $auth->bind ();
     if ($result === true)
-    {
         echo "Les identifiants sont valides !";
-    }
     else
-    {
         echo "Les identifiants sont invalides...";
-    }
 }
 catch (Exception $e)
 {
@@ -64,16 +59,21 @@ catch (Exception $e)
 }
 ```
 
-Documentation Breve
+Documentation
 ------------------
 
 Une courte documentation (autogénerée) est dispo ici: http://wearemuffin.github.io/Auth42/
 
 Tests
 ------
+(requiert phpunit, ca doit pouvoir se regler avec un `yum install php-phpunit`):
 
 La classe a été _globalement_ testée, avec un task runner et PHPUnit.
-Pour lancer les tests (requiert phpunit, ca doit pouvoir se regler avec un `yum install php-phpunit`):
+Pour lancer les tests, on va dans le dossier `tests` et on lance phpunit.
 
-`cd tests`
-`phpunit .`
+```sh
+cd tests
+```
+```sh
+phpunit .
+```
