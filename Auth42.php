@@ -83,9 +83,9 @@ class Auth42
      */
     public function bind ()
     {
-        $this->bindOnHandle();
+        $r = $this->bindOnHandle();
         ldap_close ($this->handle);
-        return (false);
+        return ($r);
     }
 
     /**
@@ -103,16 +103,17 @@ class Auth42
             ldap_set_option ($this->handle, LDAP_OPT_PROTOCOL_VERSION, 3);
             if ($this->handle)
             {
-                $bindDn = $this->computeDn ();
+                $bindDn = $this->computeDn();
                 $ok = $this->bind = ldap_bind ($this->handle, $bindDn, $this->password);
+                return ($ok);
             }
-            return ($ok);
         }
         catch (Exception $e)
         {
             //ldap_close ($this->handle);
             throw new Auth42Exception("Bind error (" . $e->getMessage () . ")");
         }
+        return ($ok);
     }
 
     /**
@@ -175,7 +176,7 @@ class Auth42
                 ), $password);
         try
         {
-            $res = $tmp->bind ();
+            $res = $tmp->bind();
         }
         catch (Exception $exc)
         {

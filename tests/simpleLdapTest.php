@@ -13,6 +13,8 @@ $password = "";
 
 /* Trying with Auth42 wrapper */
 
+var_dump(Auth42::authenticate($login, $password));
+
 $auth = new Auth42();
 $auth->setPassword ($password);
 $auth->setDn (array (
