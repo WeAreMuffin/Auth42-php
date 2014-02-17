@@ -13,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 /**
@@ -34,7 +34,7 @@ class Auth42Exception extends Exception
  * A simple abstract layer to use ldap in order to manage 42 authentications.
  * @see ldap_bind
  * @see ldap_connect
- * 
+ *
  * @author lambda2 <andre.aubin@lambdaweb.fr>
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache2
  * @link https://gist.github.com/sanecz/9025826 A gist to understand simple bind
@@ -53,8 +53,8 @@ class Auth42
     /**
      * Will construct a new Auth42 object, wich is a ldap based search and
      * authentication tool.
-     * 
-     * @param array $dn the dn to use. If no dn is provided, will use 
+     *
+     * @param array $dn the dn to use. If no dn is provided, will use
      * ou=2013,ou=people,dc=42,dc=fr as the default dn.
      * @param string $password an optionnal password to connect with.
      */
@@ -77,35 +77,90 @@ class Auth42
 
     /**
      * Will try to bind the ldap with the previously given dn and password.
+     * At the end, will close the ldap_handle.
      * @return int the binding result (0 on failure).
      * @throws Auth42Exception
      */
     public function bind ()
     {
-        $this->handle = ldap_connect (self::serverUrl);
-        ldap_set_option ($this->handle, LDAP_OPT_PROTOCOL_VERSION, 3);
-        if ( $this->handle )
-        {
-            try
-            {
-                $bindDn = $this->computeDn ();
-                $ok = $this->bind = ldap_bind ($this->handle, $bindDn, $this->password);
-                ldap_close ($this->handle);
-                return ($ok);
-            }
-            catch (Exception $e)
-            {
-                throw new Auth42Exception ("Bind error (" . $e->getMessage () . ")");
-            }
-        }
+        $this->bindOnHandle();
         ldap_close ($this->handle);
         return (false);
     }
 
     /**
+     * Will try to bind the ldap with the registered informations.
+     * This function will not automatically close the ldap handle.
+     * @return int the binding result (0 on failure).
+     * @throws Auth42Exception
+     */
+    protected function bindOnHandle()
+    {
+        $ok = false;
+        try
+        {
+            $this->handle = ldap_connect (self::serverUrl);
+            ldap_set_option ($this->handle, LDAP_OPT_PROTOCOL_VERSION, 3);
+            if ($this->handle)
+            {
+                $bindDn = $this->computeDn ();
+                $ok = $this->bind = ldap_bind ($this->handle, $bindDn, $this->password);
+            }
+            return ($ok);
+        }
+        catch (Exception $e)
+        {
+            //ldap_close ($this->handle);
+            throw new Auth42Exception("Bind error (" . $e->getMessage () . ")");
+        }
+    }
+
+    /**
+     * Will try to search the given query on the ldap.
+     * if a login and a password are supplied, will try to bind the ldap with theses
+     * id before the request. On failure, will throw an Auth42Exception.
+     * If no filter is supplied, the default filter ("dc=42,dc=fr") is applied.
+     *
+     * @param string $query the query to execute, like 'uid=a*'.
+     * @param string $login an optionnal login to bind the server.
+     * @param string $password an optionnal password to bind the server.
+     * @param string $filter a filter to apply on the search request. Default: "dc=42,dc=fr".
+     * @return array the search result(s), or false on failure.
+     * @throws Auth42Exception when the auth fail.
+     */
+    public function search($query, $login = NULL, $password = NULL, $filter = NULL)
+    {
+        if ($filter == NULL)
+        {
+            $filter = "dc=42,dc=fr";
+        }
+        if ($login and $password)
+        {
+            $this->setPassword($password);
+            $this->setDn(array (
+                    "uid" => $login,
+                    "ou" => array ("2013", "people"),
+                    "dc" => array ("42", "fr")
+                ));
+        }
+        $res = $this->bindOnHandle();
+        $sr = ldap_search($this->handle, $filter, $query);
+        if ($sr)
+        {
+            $info = ldap_get_entries($this->handle, $sr);
+        }
+        else
+        {
+            $info = false;
+        }
+        ldap_close ($this->handle);
+        return ($info);
+    }
+
+    /**
      * Will try to authenticate the user on the 42 ldap with the given
      * password and username.
-     * 
+     *
      * @param string $login the login (uid) of the student
      * @param string $password the password of the student
      * @return boolean true on success, false otherwise.
@@ -125,7 +180,8 @@ class Auth42
         catch (Exception $exc)
         {
             $res = NULL;
-        } finally
+        }
+        finally
         {
             return ($res != false);
         }
@@ -165,7 +221,7 @@ class Auth42
      * Will add (or replace) the value of the given key with
      * the given (new) value(s). If there is more than one value to add, use
      * an array instead of a string.
-     * 
+     *
      * @param string $key the key to add / replace.
      * @param string|array $value the value(s) to add.
      */
