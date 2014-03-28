@@ -1,4 +1,4 @@
-Auth42
+Auth42-php
 ======
 
 Classe d'authentification en PHP permettant d'authentifier un utilisateur de 42 (a l'aide d'une requete sur le ldap de 42)
