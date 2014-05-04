@@ -62,7 +62,7 @@ catch (Exception $e)
 Documentation
 ------------------
 
-Une courte documentation (autogénerée) est dispo ici: http://wearemuffin.github.io/Auth42/
+Une courte documentation (autogénerée) est dispo ici: http://wearemuffin.github.io/Auth42-php/
 
 Tests
 ------
